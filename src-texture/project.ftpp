@@ -1,0 +1,396 @@
+{
+  "meta": {
+    "version": "0.6.7"
+  },
+  "savePath": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture",
+  "images": [
+    {
+      "name": "Kenji-Attack1-000.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Kenji-Attack1-000.png",
+      "folder": ""
+    },
+    {
+      "name": "Kenji-Attack1-001.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Kenji-Attack1-001.png",
+      "folder": ""
+    },
+    {
+      "name": "Kenji-Attack1-002.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Kenji-Attack1-002.png",
+      "folder": ""
+    },
+    {
+      "name": "Kenji-Attack1-003.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Kenji-Attack1-003.png",
+      "folder": ""
+    },
+    {
+      "name": "Kenji-Death-000.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Kenji-Death-000.png",
+      "folder": ""
+    },
+    {
+      "name": "Kenji-Death-001.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Kenji-Death-001.png",
+      "folder": ""
+    },
+    {
+      "name": "Kenji-Death-002.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Kenji-Death-002.png",
+      "folder": ""
+    },
+    {
+      "name": "Kenji-Death-003.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Kenji-Death-003.png",
+      "folder": ""
+    },
+    {
+      "name": "Kenji-Death-004.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Kenji-Death-004.png",
+      "folder": ""
+    },
+    {
+      "name": "Kenji-Death-005.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Kenji-Death-005.png",
+      "folder": ""
+    },
+    {
+      "name": "Kenji-Death-006.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Kenji-Death-006.png",
+      "folder": ""
+    },
+    {
+      "name": "Kenji-Fall-000.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Kenji-Fall-000.png",
+      "folder": ""
+    },
+    {
+      "name": "Kenji-Fall-001.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Kenji-Fall-001.png",
+      "folder": ""
+    },
+    {
+      "name": "Kenji-Idle-000.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Kenji-Idle-000.png",
+      "folder": ""
+    },
+    {
+      "name": "Kenji-Idle-001.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Kenji-Idle-001.png",
+      "folder": ""
+    },
+    {
+      "name": "Kenji-Idle-002.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Kenji-Idle-002.png",
+      "folder": ""
+    },
+    {
+      "name": "Kenji-Idle-003.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Kenji-Idle-003.png",
+      "folder": ""
+    },
+    {
+      "name": "Kenji-Jump-000.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Kenji-Jump-000.png",
+      "folder": ""
+    },
+    {
+      "name": "Kenji-Jump-001.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Kenji-Jump-001.png",
+      "folder": ""
+    },
+    {
+      "name": "Kenji-Run-000.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Kenji-Run-000.png",
+      "folder": ""
+    },
+    {
+      "name": "Kenji-Run-001.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Kenji-Run-001.png",
+      "folder": ""
+    },
+    {
+      "name": "Kenji-Run-002.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Kenji-Run-002.png",
+      "folder": ""
+    },
+    {
+      "name": "Kenji-Run-003.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Kenji-Run-003.png",
+      "folder": ""
+    },
+    {
+      "name": "Kenji-Run-004.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Kenji-Run-004.png",
+      "folder": ""
+    },
+    {
+      "name": "Kenji-Run-005.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Kenji-Run-005.png",
+      "folder": ""
+    },
+    {
+      "name": "Kenji-Run-006.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Kenji-Run-006.png",
+      "folder": ""
+    },
+    {
+      "name": "Kenji-Run-007.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Kenji-Run-007.png",
+      "folder": ""
+    },
+    {
+      "name": "Kenji-Take-Hit-000.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Kenji-Take-Hit-000.png",
+      "folder": ""
+    },
+    {
+      "name": "Kenji-Take-Hit-001.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Kenji-Take-Hit-001.png",
+      "folder": ""
+    },
+    {
+      "name": "Kenji-Take-Hit-002.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Kenji-Take-Hit-002.png",
+      "folder": ""
+    },
+    {
+      "name": "Mack-Attack1-000.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Mack-Attack1-000.png",
+      "folder": ""
+    },
+    {
+      "name": "Mack-Attack1-001.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Mack-Attack1-001.png",
+      "folder": ""
+    },
+    {
+      "name": "Mack-Attack1-002.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Mack-Attack1-002.png",
+      "folder": ""
+    },
+    {
+      "name": "Mack-Attack1-003.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Mack-Attack1-003.png",
+      "folder": ""
+    },
+    {
+      "name": "Mack-Attack1-004.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Mack-Attack1-004.png",
+      "folder": ""
+    },
+    {
+      "name": "Mack-Attack1-005.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Mack-Attack1-005.png",
+      "folder": ""
+    },
+    {
+      "name": "Mack-Death-000.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Mack-Death-000.png",
+      "folder": ""
+    },
+    {
+      "name": "Mack-Death-001.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Mack-Death-001.png",
+      "folder": ""
+    },
+    {
+      "name": "Mack-Death-002.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Mack-Death-002.png",
+      "folder": ""
+    },
+    {
+      "name": "Mack-Death-003.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Mack-Death-003.png",
+      "folder": ""
+    },
+    {
+      "name": "Mack-Death-004.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Mack-Death-004.png",
+      "folder": ""
+    },
+    {
+      "name": "Mack-Death-005.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Mack-Death-005.png",
+      "folder": ""
+    },
+    {
+      "name": "Mack-Fall-000.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Mack-Fall-000.png",
+      "folder": ""
+    },
+    {
+      "name": "Mack-Fall-001.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Mack-Fall-001.png",
+      "folder": ""
+    },
+    {
+      "name": "Mack-Idle-000.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Mack-Idle-000.png",
+      "folder": ""
+    },
+    {
+      "name": "Mack-Idle-001.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Mack-Idle-001.png",
+      "folder": ""
+    },
+    {
+      "name": "Mack-Idle-002.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Mack-Idle-002.png",
+      "folder": ""
+    },
+    {
+      "name": "Mack-Idle-003.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Mack-Idle-003.png",
+      "folder": ""
+    },
+    {
+      "name": "Mack-Idle-004.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Mack-Idle-004.png",
+      "folder": ""
+    },
+    {
+      "name": "Mack-Idle-005.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Mack-Idle-005.png",
+      "folder": ""
+    },
+    {
+      "name": "Mack-Idle-006.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Mack-Idle-006.png",
+      "folder": ""
+    },
+    {
+      "name": "Mack-Idle-007.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Mack-Idle-007.png",
+      "folder": ""
+    },
+    {
+      "name": "Mack-Jump-000.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Mack-Jump-000.png",
+      "folder": ""
+    },
+    {
+      "name": "Mack-Jump-001.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Mack-Jump-001.png",
+      "folder": ""
+    },
+    {
+      "name": "Mack-Run-000.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Mack-Run-000.png",
+      "folder": ""
+    },
+    {
+      "name": "Mack-Run-001.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Mack-Run-001.png",
+      "folder": ""
+    },
+    {
+      "name": "Mack-Run-002.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Mack-Run-002.png",
+      "folder": ""
+    },
+    {
+      "name": "Mack-Run-003.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Mack-Run-003.png",
+      "folder": ""
+    },
+    {
+      "name": "Mack-Run-004.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Mack-Run-004.png",
+      "folder": ""
+    },
+    {
+      "name": "Mack-Run-005.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Mack-Run-005.png",
+      "folder": ""
+    },
+    {
+      "name": "Mack-Run-006.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Mack-Run-006.png",
+      "folder": ""
+    },
+    {
+      "name": "Mack-Run-007.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Mack-Run-007.png",
+      "folder": ""
+    },
+    {
+      "name": "Mack-Take-Hit-000.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Mack-Take-Hit-000.png",
+      "folder": ""
+    },
+    {
+      "name": "Mack-Take-Hit-001.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Mack-Take-Hit-001.png",
+      "folder": ""
+    },
+    {
+      "name": "Mack-Take-Hit-002.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Mack-Take-Hit-002.png",
+      "folder": ""
+    },
+    {
+      "name": "Mack-Take-Hit-003.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Mack-Take-Hit-003.png",
+      "folder": ""
+    },
+    {
+      "name": "Shop-000.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Shop-000.png",
+      "folder": ""
+    },
+    {
+      "name": "Shop-001.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Shop-001.png",
+      "folder": ""
+    },
+    {
+      "name": "Shop-002.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Shop-002.png",
+      "folder": ""
+    },
+    {
+      "name": "Shop-003.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Shop-003.png",
+      "folder": ""
+    },
+    {
+      "name": "Shop-004.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Shop-004.png",
+      "folder": ""
+    },
+    {
+      "name": "Shop-005.png",
+      "path": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture/Shop-005.png",
+      "folder": ""
+    }
+  ],
+  "folders": [],
+  "packOptions": {
+    "textureName": "spritesheet",
+    "textureFormat": "png",
+    "removeFileExtension": false,
+    "prependFolderName": true,
+    "base64Export": false,
+    "tinify": false,
+    "tinifyKey": "",
+    "scale": 1,
+    "filter": "none",
+    "exporter": "JSON (hash)",
+    "fileName": "pack-result",
+    "savePath": "/mnt/mystorage/js_projects/simple-html5-fighting-game/src-texture",
+    "width": 3500,
+    "height": 2048,
+    "fixedSize": false,
+    "powerOfTwo": false,
+    "padding": 0,
+    "extrude": 0,
+    "allowRotation": false,
+    "allowTrim": false,
+    "trimMode": "trim",
+    "alphaThreshold": "0",
+    "detectIdentical": true,
+    "packer": "MaxRectsPacker",
+    "packerMethod": "Smart"
+  }
+}
