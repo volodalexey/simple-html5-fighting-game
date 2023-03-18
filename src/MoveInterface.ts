@@ -14,7 +14,7 @@ export interface IMoveInterfaceOptions {
   downLeftFillColor?: number
   leftFillColor?: number
   upLeftFillColor?: number
-  onDirectionPressedChange: () => void
+  onDirectionPressedChange?: () => void
 }
 
 enum EnumDirection {
@@ -24,7 +24,27 @@ enum EnumDirection {
   left = 'left',
 }
 
-export class MoveInterface extends Container {
+enum EnumMoveBy {
+  pointerMouse,
+  pointerTouch,
+  keyboardWASD,
+  keyboardArrow,
+}
+
+export interface IMoveInterface {
+  moveBy: EnumMoveBy[]
+  playerWidth: number
+  playerHeight: number
+  directionPressed: Record<EnumDirection, number>
+  setup: () => void
+  draw: (options: IMoveInterfaceOptions) => void
+  setupEventLesteners: () => void
+  setDirectionPressed: (pressed: boolean | undefined, x: number, y: number) => void
+}
+
+export class MoveInterface extends Container implements IMoveInterface {
+  static MOVE_BY = EnumMoveBy
+  public moveBy!: EnumMoveBy[]
   public playerWidth!: number
   public playerHeight!: number
   public onDirectionPressedChange!: IMoveInterfaceOptions['onDirectionPressedChange']
@@ -46,7 +66,7 @@ export class MoveInterface extends Container {
     this.playerHeight = options.playerHeight
     this.onDirectionPressedChange = options.onDirectionPressedChange
     this.setup()
-    this.draw(options)
+    // this.draw(options)
   }
 
   setup (): void {
@@ -223,6 +243,8 @@ export class MoveInterface extends Container {
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       logPointerEvent(`pressed=${pressed} x=${x} y=${y} hw=${halfWidth} hh=${halfHeight}`)
     }
-    this.onDirectionPressedChange()
+    if (typeof this.onDirectionPressedChange === 'function') {
+      this.onDirectionPressedChange()
+    }
   }
 }

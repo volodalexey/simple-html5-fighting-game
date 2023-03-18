@@ -24,13 +24,6 @@ module.exports = {
         test: /\.css$/i,
         use: [MiniCssExtractPlugin.loader, 'css-loader'],
         exclude: /node_modules/
-      },
-      {
-        test: /\.woff2$/,
-        type: 'asset/resource',
-        generator: {
-          filename: './assets/fonts/[name][ext]'
-        }
       }
     ]
   },
@@ -64,8 +57,9 @@ module.exports = {
     }),
     new CopyPlugin({
       patterns: [
-        { from: 'src/assets/spritesheets/**', to: 'assets/spritesheets/[name][ext]' },
-        { from: 'src/assets/images/**', to: 'assets/images/[name][ext]' }
+        { from: 'src/assets/fonts/**', to: 'assets/fonts/[name][ext]' },
+        { from: 'src/assets/images/**', to: 'assets/images/[name][ext]' },
+        { from: 'src/assets/spritesheets/**', to: 'assets/spritesheets/[name][ext]' }
       ]
     })
   ]

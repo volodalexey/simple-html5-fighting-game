@@ -1,17 +1,35 @@
-import { AnimatedSprite, Container, type Texture } from 'pixi.js'
+import { AnimatedSprite, Container, Graphics, type Texture } from 'pixi.js'
+import { logAttackBox, logFighterBox } from './logger'
+import { type MoveInterface } from './MoveInterface'
 
-interface IFighterOptions {
+export interface IFighterOptions {
+  width: number
+  height: number
   position: {
     x: number
     y: number
   }
-  sprites: {
+  textures: {
     idleTexture: Texture[]
     runTexture: Texture[]
     jumpTexture: Texture[]
     fallTexture: Texture[]
     attackTexture: Texture[]
     deathTexture: Texture[]
+  }
+  texturesOptions: {
+    offset: {
+      x: number
+      y: number
+    }
+  }
+  attackOptions: {
+    offset: {
+      x: number
+      y: number
+    }
+    width: number
+    height: number
   }
 }
 
@@ -32,17 +50,28 @@ export class Fighter extends Container {
   public fall!: AnimatedSprite
   public attack!: AnimatedSprite
   public death!: AnimatedSprite
-  public animationSpeed = 0.2
+  public fighterBox!: Graphics
+  public attackBox!: Graphics
+  public settings = {
+    animationSpeed: 0.2,
+    fighterBoxColor: 0x00ffff,
+    attackBoxColor: 0xff00ff
+  }
+
+  public moveInterface!: MoveInterface
+
   constructor (options: IFighterOptions) {
     super()
     this.setup(options)
-
-    this.position.x = options.position.x
-    this.position.y = options.position.y
+    this.draw(options)
   }
 
   setup ({
-    sprites: {
+    width,
+    height,
+    position,
+    attackOptions,
+    textures: {
       idleTexture,
       runTexture,
       jumpTexture,
@@ -51,36 +80,78 @@ export class Fighter extends Container {
       deathTexture
     }
   }: IFighterOptions): void {
-    const { animationSpeed } = this
-    const idle = new AnimatedSprite(idleTexture)
-    idle.animationSpeed = animationSpeed
-    this.addChild(idle)
-    this.idle = idle
+    const { settings } = this
+    this.x = position.x
+    this.y = position.y
+    this.cullable = true
+    this.width = 100
+    this.height = 100
+    const fighterBox = new Graphics()
+    this.addChild(fighterBox)
+    this.fighterBox = fighterBox
 
-    const run = new AnimatedSprite(runTexture)
-    run.animationSpeed = animationSpeed
-    this.addChild(run)
-    this.run = run
+    const spritesContainer = new Container()
+    console.log(spritesContainer)
 
-    const jump = new AnimatedSprite(jumpTexture)
-    jump.animationSpeed = animationSpeed
-    this.addChild(jump)
-    this.jump = jump
+    // const idle = new AnimatedSprite(idleTexture)
+    // idle.animationSpeed = settings.animationSpeed
+    // spritesContainer.addChild(idle)
+    // this.idle = idle
 
-    const fall = new AnimatedSprite(fallTexture)
-    fall.animationSpeed = animationSpeed
-    this.addChild(fall)
-    this.fall = fall
+    // const run = new AnimatedSprite(runTexture)
+    // run.animationSpeed = settings.animationSpeed
+    // spritesContainer.addChild(run)
+    // this.run = run
+
+    // const jump = new AnimatedSprite(jumpTexture)
+    // jump.animationSpeed = settings.animationSpeed
+    // spritesContainer.addChild(jump)
+    // this.jump = jump
+
+    // const fall = new AnimatedSprite(fallTexture)
+    // fall.animationSpeed = settings.animationSpeed
+    // spritesContainer.addChild(fall)
+    // this.fall = fall
 
     const attack = new AnimatedSprite(attackTexture)
-    attack.animationSpeed = animationSpeed
-    this.addChild(attack)
+    attack.animationSpeed = settings.animationSpeed
+    spritesContainer.addChild(attack)
     this.attack = attack
 
-    const death = new AnimatedSprite(deathTexture)
-    death.animationSpeed = animationSpeed
-    this.addChild(death)
-    this.death = death
+    // const death = new AnimatedSprite(deathTexture)
+    // death.animationSpeed = settings.animationSpeed
+    // spritesContainer.addChild(death)
+    // this.death = death
+
+    this.addChild(spritesContainer)
+
+    /*
+    var texture = PIXI.Texture.fromImage('sprite.png');
+    var sprite = new PIXI.Sprite(texture);
+    var texture2 = new PIXI.Texture(texture, new PIXI.Rectangle(10, 10, 50, 50));
+    sprite.setTexture(texture2);
+    */
+
+    // spritesContainer.position.x = offset.x
+    // spritesContainer.position.y = offset.y
+
+    // const attackBox = new Graphics()
+    // attackBox.position.x = attackOptions.offset.x
+    // attackBox.position.y = attackOptions.offset.y
+    // this.addChild(attackBox)
+    // this.attackBox = attackBox
+  }
+
+  draw ({ attackOptions: { width, height } }: IFighterOptions): void {
+    this.fighterBox.beginFill(this.settings.fighterBoxColor)
+    this.fighterBox.drawRect(0, 0, this.width, this.height)
+    this.fighterBox.endFill()
+    this.fighterBox.alpha = logFighterBox.enabled ? 0.5 : 0
+
+    // this.attackBox.beginFill(this.settings.attackBoxColor)
+    // this.attackBox.drawRect(0, 0, width, height)
+    // this.attackBox.endFill()
+    // this.attackBox.alpha = logAttackBox.enabled ? 0.5 : 0
   }
 
   stopAllAnimations (): void {
@@ -91,7 +162,7 @@ export class Fighter extends Container {
   }
 
   switchAnimation (animation: FighterAnimation): void {
-    this.stopAllAnimations()
+    // this.stopAllAnimations()
     switch (animation) {
       case FighterAnimation.idle:
         this.idle.play()

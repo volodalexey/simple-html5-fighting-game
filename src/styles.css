@@ -1,24 +1,30 @@
-@font-face {
-  font-family: 'Press Start 2P';
-  font-style: cursive;
-  font-weight: 400;
-  font-display: swap;
-  src: url('./assets/fonts/Press_Start_2P.woff2') format('woff2');
-}
-
 body {
   padding: 0;
   margin: 0;
-  font-family: 'Press Start 2P', cursive;
 }
 
 canvas {
   display: block;
 }
 
-#font-preloader {
-  position: absolute;
-  top: -100vh;
-  left: -100vw;
-  opacity: 0;
+.ellipsis {
+  margin-right: auto;
+}
+
+@keyframes ellipsis {
+  from {
+    width: 0;
+  }
+
+  to {
+    width: 9rem;
+  }
+}
+
+.ellipsis::after {
+  font-size: 4rem;
+  content: "......";
+  display: inline-block;
+  overflow: hidden;
+  animation: ellipsis 2s linear infinite;
 }

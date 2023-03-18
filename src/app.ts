@@ -1,19 +1,45 @@
-import { Application } from 'pixi.js'
-
 import './styles.css'
-import { World } from './World'
-import { GameLoader } from './GameLoader'
+import { SceneManager } from './SceneManager'
+import { FightingScene } from './FightingScene'
+import { LoaderScene } from './LoaderScene'
 
 async function run (): Promise<void> {
-  const gameLoader = new GameLoader()
-  await gameLoader.loadAll()
-  const app = new Application({
-    width: window.innerWidth,
-    height: window.innerHeight,
-    backgroundColor: 0xe6e7ea,
-    resizeTo: window
+  const ellipsis: HTMLElement | null = document.querySelector('.ellipsis')
+  if (ellipsis != null) {
+    ellipsis.style.display = 'none'
+  }
+  await SceneManager.initialize()
+  const loaderScene = new LoaderScene({
+    viewWidth: SceneManager.width,
+    viewHeight: SceneManager.height
   })
-  void new World({ app, gameLoader })
+  await SceneManager.changeScene(loaderScene)
+  await loaderScene.initializeLoader()
+  const { backgroundTexture, spritesheet: { animations } } = loaderScene.getAssets()
+  await SceneManager.changeScene(new FightingScene({
+    viewWidth: SceneManager.width,
+    viewHeight: SceneManager.height,
+    textures: {
+      backgroundTexture,
+      shopTexture: animations.Shop
+    },
+    player1Textures: {
+      idleTexture: animations['Mack-Idle'],
+      runTexture: animations['Mack-Run'],
+      jumpTexture: animations['Mack-Jump'],
+      fallTexture: animations['Mack-Fall'],
+      attackTexture: animations['Mack-Attack1'],
+      deathTexture: animations['Mack-Death']
+    },
+    player2Textures: {
+      idleTexture: animations['Kenji-Idle'],
+      runTexture: animations['Kenji-Run'],
+      jumpTexture: animations['Kenji-Jump'],
+      fallTexture: animations['Kenji-Fall'],
+      attackTexture: animations['Kenji-Attack1'],
+      deathTexture: animations['Kenji-Death']
+    }
+  }))
 }
 
 run().catch(console.error)

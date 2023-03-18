@@ -1,7 +1,9 @@
 import debug from 'debug'
 
-export const logWorld = debug('fight-world')
-export const logLayout = debug('fight-layout')
-export const logRectCollision = debug('fight-rect-collision')
-export const logMoveInterface = debug('fight-move-interface')
-export const logPointerEvent = debug('fight-pointer-event')
+export const logApp = debug('fighting-app')
+export const logLayout = debug('fighting-layout')
+export const logRectCollision = debug('fighting-rect-collision')
+export const logMoveInterface = debug('fighting-move-interface')
+export const logPointerEvent = debug('fighting-pointer-event')
+export const logFighterBox = debug('fighting-fighter-box')
+export const logAttackBox = debug('fighting-attack-box')
