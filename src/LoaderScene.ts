@@ -124,6 +124,10 @@ export class LoaderScene extends Container implements IScene {
     logLayout(`x=${this.x} y=${this.y} w=${this.width} h=${this.height}`)
   }
 
+  handleMounted (): void {
+
+  }
+
   public handleUpdate (): void {
 
   }

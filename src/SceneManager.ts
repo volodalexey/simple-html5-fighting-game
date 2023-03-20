@@ -2,6 +2,7 @@ import { Application, Container, type DisplayObject } from 'pixi.js'
 import { logApp } from './logger'
 
 export interface IScene extends DisplayObject {
+  handleMounted: () => void
   handleUpdate: () => void
   handleResize: (options: {
     viewWidth: number
@@ -10,6 +11,10 @@ export interface IScene extends DisplayObject {
 }
 
 class DefaultScene extends Container implements IScene {
+  handleMounted (): void {
+
+  }
+
   handleUpdate (): void {
 
   }
@@ -77,6 +82,8 @@ export abstract class SceneManager {
     // we now store it and show it, as it is completely created
     SceneManager.currentScene = newScene
     SceneManager.app.stage.addChild(SceneManager.currentScene)
+
+    SceneManager.currentScene.handleMounted()
 
     SceneManager.resizeHandler()
   }

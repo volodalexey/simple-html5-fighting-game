@@ -1,6 +1,6 @@
 import { AnimatedSprite, Container, Graphics, Sprite, type Texture, Text } from 'pixi.js'
 import { Fighter, type IFighterOptions } from './Fighter'
-import { logLayout } from './logger'
+import { logFighterBounds, logLayout } from './logger'
 import { MoveInterface } from './MoveInterface'
 import { type IScene } from './SceneManager'
 
@@ -16,18 +16,18 @@ interface IFightingSceneOptions {
 }
 
 export class FightingScene extends Container implements IScene {
+  public iter = 0
+  public gravity = 0.7
+  public floorY = 480
   public background!: Sprite
   public shop!: AnimatedSprite
   public overlay!: Graphics
-  public backgroundSettings = {
-    alpha: 0.65
-  }
 
   public shopSettings = {
     animationSpeed: 0.1,
-    scale: 2.5,
+    scale: 2.75,
     x: 600,
-    y: 160
+    y: 128
   }
 
   public overlaySettings = {
@@ -36,7 +36,21 @@ export class FightingScene extends Container implements IScene {
   }
 
   public player1!: Fighter
+  public player1Options = {
+    initialPosition: {
+      x: 10,
+      y: -100
+    }
+  }
+
   public player2!: Fighter
+  public player2Options = {
+    initialPosition: {
+      x: 600,
+      y: -123
+    }
+  }
+
   public moveInterface1!: MoveInterface
   public moveInterface2!: MoveInterface
 
@@ -49,11 +63,11 @@ export class FightingScene extends Container implements IScene {
 
   setup ({ viewWidth, viewHeight, player1Textures, player2Textures, textures: { backgroundTexture, shopTexture } }: IFightingSceneOptions): void {
     this.player1 = new Fighter({
-      width: 67,
-      height: 77,
-      position: {
-        x: 0,
-        y: 205
+      box: {
+        toTop: 0,
+        toRight: 0,
+        toBottom: 55,
+        toLeft: 0
       },
       textures: player1Textures,
       texturesOptions: {
@@ -73,11 +87,11 @@ export class FightingScene extends Container implements IScene {
     })
 
     this.player2 = new Fighter({
-      width: 67,
-      height: 77,
-      position: {
-        x: 500,
-        y: 192
+      box: {
+        toTop: 0,
+        toRight: 0,
+        toBottom: 70,
+        toLeft: 0
       },
       textures: player2Textures,
       texturesOptions: {
@@ -96,9 +110,8 @@ export class FightingScene extends Container implements IScene {
       }
     })
 
-    const { backgroundSettings, shopSettings, player1, player2 } = this
+    const { shopSettings, player1, player2 } = this
     const background = new Sprite(backgroundTexture)
-    background.alpha = backgroundSettings.alpha
     this.addChild(background)
     this.background = background
 
@@ -139,7 +152,7 @@ export class FightingScene extends Container implements IScene {
     }))
   }
 
-  draw ({ viewWidth, viewHeight }: IFightingSceneOptions): void {
+  draw (_: IFightingSceneOptions): void {
     this.overlay.beginFill(this.overlaySettings.color)
     this.overlay.drawRect(0, 0, this.background.width, this.background.height)
     this.overlay.endFill()
@@ -183,18 +196,31 @@ export class FightingScene extends Container implements IScene {
   }
 
   handleUpdate (): void {
-    // const randomAnimation = Object.values(FighterAnimation)[Math.floor(Math.random() * 6)]
-    // // this.app.ticker.deltaMS
-    // if (this.timer % 60 === 0) {
-    //   this.fightingScreen.player1.switchAnimation(randomAnimation)
-    //   this.fightingScreen.player2.switchAnimation(randomAnimation)
-    // }
-    // this.fightingScreen.player1.switchAnimation(FighterAnimation.attack)
+    this.iter++
+    [this.player1, this.player2].forEach(player => {
+      const playerBottom = player.y + player.height / 2 + player.box.toBottom
+      logFighterBounds(`px=${player.x} py=${player.y} ph=${player.height} to-bot=${player.box.toBottom} bot=${playerBottom}`)
+      if (playerBottom + player.velocity.vy >= this.floorY) {
+        logFighterBounds(`Floor bot=${playerBottom} vy=${player.velocity.vy} fl=${this.floorY}`)
+        player.velocity.vy = 0
+        player.position.y = this.floorY - (player.height / 2 + player.box.toBottom)
+      } else {
+        logFighterBounds(`Gravity bot=${playerBottom} vy=${player.velocity.vy} fl=${this.floorY}`)
+        player.velocity.vy += this.gravity
+        player.position.y += player.velocity.vy
+      }
+    })
+  }
 
-    this.player1.attack.stop()
-    this.player1.attack.currentFrame = 4
-    // this.fightingScreen.player2.switchAnimation(FighterAnimation.attack)
-    this.player2.attack.stop()
-    this.player2.attack.currentFrame = 1
+  handleMounted (): void {
+    Promise.resolve().then(() => {
+      this.startFighters()
+    }).catch(console.error)
+  }
+
+  startFighters (): void {
+    const { player1, player1Options, player2, player2Options } = this
+    player1.position = player1Options.initialPosition
+    player2.position = player2Options.initialPosition
   }
 }
