@@ -42,7 +42,7 @@ export abstract class SceneManager {
 
   public static async initialize (): Promise<void> {
     const app = new Application<HTMLCanvasElement>({
-      // autoDensity: true,
+      autoDensity: true,
       resolution: window.devicePixelRatio ?? 1,
       width: SceneManager.width,
       height: SceneManager.height,
@@ -52,7 +52,7 @@ export abstract class SceneManager {
     document.body.appendChild(app.view)
     if (logApp.enabled) {
       logApp('window.app initialized!');
-      (window as unknown as any).app = this
+      (window as unknown as any).app = app
     }
 
     SceneManager.app = app
@@ -77,6 +77,8 @@ export abstract class SceneManager {
     // we now store it and show it, as it is completely created
     SceneManager.currentScene = newScene
     SceneManager.app.stage.addChild(SceneManager.currentScene)
+
+    SceneManager.resizeHandler()
   }
 
   private static resizeDeBounce (): void {
