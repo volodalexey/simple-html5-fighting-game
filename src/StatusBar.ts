@@ -17,6 +17,7 @@ export class StatusBar extends Container {
   public time = 90 * 1000
   public timerBox!: Graphics
   public timerBoxOptions = {
+    textSize: 16,
     text: 0xffffff,
     fill: 0x000000,
     border: 0xffffff,
@@ -42,7 +43,7 @@ export class StatusBar extends Container {
 
     const timerText = new Text(String(Math.round(this.time / 1000)), {
       fontFamily: 'Press Start 2P',
-      fontSize: 16,
+      fontSize: this.timerBoxOptions.textSize,
       fill: this.timerBoxOptions.text
     })
     timerText.anchor.set(0.5, 0.5)
@@ -81,6 +82,9 @@ export class StatusBar extends Container {
 
   update (deltaMS: number): void {
     this.time -= deltaMS
+    if (this.time < 0) {
+      this.time = 0
+    }
     this.timerText.text = Math.round(this.time / 1000)
   }
 

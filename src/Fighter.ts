@@ -53,7 +53,7 @@ export class Fighter extends Container {
   public moveSpeed!: number
   public jumpSpeed!: number
 
-  public directionPressed: Record<'top' | 'right' | 'bottom' | 'left', boolean> = {
+  private readonly directionPressed: Record<'top' | 'right' | 'bottom' | 'left', boolean> = {
     top: false,
     right: false,
     bottom: false,
@@ -205,8 +205,39 @@ export class Fighter extends Container {
     this.directionPressed.left = false
   }
 
+  setTopDirectionPressed (pressed: boolean): void {
+    if (this.isDead) {
+      return
+    }
+    this.directionPressed.top = pressed
+  }
+
+  setLeftDirectionPressed (pressed: boolean): void {
+    if (this.isDead) {
+      return
+    }
+    this.directionPressed.left = pressed
+  }
+
+  setRightDirectionPressed (pressed: boolean): void {
+    if (this.isDead) {
+      return
+    }
+    this.directionPressed.right = pressed
+  }
+
+  setBottomDirectionPressed (pressed: boolean): void {
+    if (this.isDead) {
+      return
+    }
+    this.directionPressed.bottom = pressed
+  }
+
   handleMove (pressed: boolean | undefined, x: number, y: number): void {
-    const { directionPressed } = this
+    const { directionPressed, isDead } = this
+    if (isDead) {
+      return
+    }
     if (typeof pressed === 'boolean') {
       this.isPressed = pressed
     }
@@ -246,7 +277,6 @@ export class Fighter extends Container {
   }
 
   switchAnimation (animation: FighterAnimation): void {
-    this.isAttacking()
     this.hideAllAnimations()
     this.stopAllAnimations()
     switch (animation) {
@@ -317,7 +347,7 @@ export class Fighter extends Container {
   }
 
   updateAnimation (): void {
-    if (this.isDying()) {
+    if (this.isDying() || this.isDead) {
       if (this.death.currentFrame === this.death.totalFrames - 1) {
         this.death.stop()
         this.isDead = true
@@ -347,7 +377,7 @@ export class Fighter extends Container {
       }
     }
 
-    if (this.directionPressed.bottom && !this.isAttacking()) {
+    if (!this.isDying() && this.directionPressed.bottom && !this.isAttacking()) {
       this.directionPressed.bottom = false
       this.attackHitAvailable = false
       this.attackHitProcessed = false
@@ -366,6 +396,10 @@ export class Fighter extends Container {
     levelRight: number
     levelBottom: number
   }): void {
+    if (this.isDead) {
+      return
+    }
+
     if (this.directionPressed.top && this.velocity.vy === 0) {
       this.velocity.vy = -this.jumpSpeed
     }

@@ -1,4 +1,4 @@
-import { AnimatedSprite, Container, type FederatedPointerEvent, Graphics, Sprite, type Texture } from 'pixi.js'
+import { AnimatedSprite, Container, type FederatedPointerEvent, Graphics, Sprite, type Texture, Text } from 'pixi.js'
 import { StatusBar } from './StatusBar'
 import { Fighter, type IFighterOptions } from './Fighter'
 import { logDamage, logKeydown, logKeyup, logLayout, logPointerEvent } from './logger'
@@ -20,6 +20,8 @@ export class FightingScene extends Container implements IScene {
   public gravity = 0.7
   public floorY = 480
   public background!: Sprite
+  public foreground!: Container
+  public foregroundText!: Text
   public shop!: AnimatedSprite
   public overlay!: Graphics
 
@@ -33,6 +35,11 @@ export class FightingScene extends Container implements IScene {
   public overlaySettings = {
     color: 0xffffff,
     alpha: 0.15
+  }
+
+  public foregroundSettings = {
+    size: 16,
+    color: 0xffffff
   }
 
   public player1!: Fighter
@@ -139,6 +146,20 @@ export class FightingScene extends Container implements IScene {
     const statusBar = new StatusBar({})
     this.addChild(statusBar)
     this.statusBar = statusBar
+
+    const foreground = new Container()
+    foreground.visible = false
+    const foregroundText = new Text('...', {
+      fontFamily: 'Press Start 2P',
+      fontSize: this.foregroundSettings.size,
+      fill: this.foregroundSettings.color
+    })
+    foregroundText.anchor.set(0.5, 0.5)
+    foregroundText.position.set(this.width / 2, this.height / 2)
+    this.foregroundText = foregroundText
+    foreground.addChild(foregroundText)
+    this.addChild(foreground)
+    this.foreground = foreground
   }
 
   draw (_: IFightingSceneOptions): void {
@@ -185,7 +206,6 @@ export class FightingScene extends Container implements IScene {
   }
 
   handleUpdate (deltaMS: number): void {
-    this.statusBar.update(deltaMS);
     [this.player1, this.player2].forEach(player => {
       player.update({
         gravity: this.gravity,
@@ -195,7 +215,14 @@ export class FightingScene extends Container implements IScene {
       })
     })
 
-    if (this.player1.attackHitAvailable && !this.player1.attackHitProcessed) {
+    const isAliveBoth = this.player1.health > 0 && this.player2.health > 0
+
+    if (isAliveBoth) {
+      this.statusBar.update(deltaMS)
+    }
+
+    if (isAliveBoth &&
+      this.player1.attackHitAvailable && !this.player1.attackHitProcessed) {
       this.player1.attackHitProcessed = true
       const p1AttackBounds = this.player1.toAttackBounds()
       const p2Bounds = this.player2.toBounds()
@@ -207,7 +234,8 @@ export class FightingScene extends Container implements IScene {
       }
     }
 
-    if (this.player2.attackHitAvailable && !this.player2.attackHitProcessed) {
+    if (isAliveBoth &&
+      this.player2.attackHitAvailable && !this.player2.attackHitProcessed) {
       this.player2.attackHitProcessed = true
       const p2AttackBounds = this.player2.toAttackBounds()
       const p1Bounds = this.player1.toBounds()
@@ -293,30 +321,30 @@ export class FightingScene extends Container implements IScene {
     logKeydown(`${e.code} ${e.key}`)
     switch (e.code) {
       case 'KeyW':
-        player1.directionPressed.top = true
+        player1.setTopDirectionPressed(true)
         break
       case 'KeyA':
-        player1.directionPressed.left = true
+        player1.setLeftDirectionPressed(true)
         break
       case 'KeyS': case 'Space': case 'ShiftLeft':
-        player1.directionPressed.bottom = true
+        player1.setBottomDirectionPressed(true)
         break
       case 'KeyD':
-        player1.directionPressed.right = true
+        player1.setRightDirectionPressed(true)
         break
     }
     switch (e.code) {
       case 'ArrowUp':
-        player2.directionPressed.top = true
+        player2.setTopDirectionPressed(true)
         break
       case 'ArrowLeft':
-        player2.directionPressed.left = true
+        player2.setLeftDirectionPressed(true)
         break
       case 'ArrowDown': case 'Numpad0': case 'ShiftRight':
-        player2.directionPressed.bottom = true
+        player2.setBottomDirectionPressed(true)
         break
       case 'ArrowRight':
-        player2.directionPressed.right = true
+        player2.setRightDirectionPressed(true)
         break
     }
   }
@@ -326,37 +354,47 @@ export class FightingScene extends Container implements IScene {
     logKeyup(`${e.code} ${e.key}`)
     switch (e.code) {
       case 'KeyW':
-        player1.directionPressed.top = false
+        player1.setTopDirectionPressed(false)
         break
       case 'KeyA':
-        player1.directionPressed.left = false
+        player1.setLeftDirectionPressed(false)
         break
       case 'KeyS':
-        player1.directionPressed.bottom = false
+        player1.setBottomDirectionPressed(false)
         break
       case 'KeyD':
-        player1.directionPressed.right = false
+        player1.setRightDirectionPressed(false)
         break
     }
     switch (e.code) {
       case 'ArrowUp':
-        player2.directionPressed.top = false
+        player2.setTopDirectionPressed(false)
         break
       case 'ArrowLeft':
-        player2.directionPressed.left = false
+        player2.setLeftDirectionPressed(false)
         break
       case 'ArrowDown':
-        player2.directionPressed.bottom = false
+        player2.setBottomDirectionPressed(false)
         break
       case 'ArrowRight':
-        player2.directionPressed.right = false
+        player2.setRightDirectionPressed(false)
         break
     }
   }
 
   checkEndFight (): void {
-    if (this.player1.isDying() || this.player2.isDying()) {
-      console.log('END')
+    if (this.player1.isDying() || this.player2.isDying() || this.statusBar.time <= 0) {
+      this.foreground.visible = true
+      if (this.player1.health === this.player2.health) {
+        this.foregroundText.text = 'Tie'
+      } else if (this.player1.health > this.player2.health) {
+        this.foregroundText.text = 'Player 1 Wins'
+      } else if (this.player1.health < this.player2.health) {
+        this.foregroundText.text = 'Player 2 Wins'
+      }
+    }
+    if (this.player1.isDead || this.player2.isDead) {
+      this.removeEventListeners()
     }
   }
 }
