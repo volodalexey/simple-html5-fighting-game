@@ -1,6 +1,6 @@
 import { AnimatedSprite, Container, Graphics, Sprite, type Texture, Text } from 'pixi.js'
 import { Fighter, type IFighterOptions } from './Fighter'
-import { logFighterBounds, logLayout } from './logger'
+import { logFighterBounds, logFighterGravity, logFighterMove, logKeydown, logKeyup, logLayout, logPointerEvent } from './logger'
 import { MoveInterface } from './MoveInterface'
 import { type IScene } from './SceneManager'
 
@@ -16,7 +16,6 @@ interface IFightingSceneOptions {
 }
 
 export class FightingScene extends Container implements IScene {
-  public iter = 0
   public gravity = 0.7
   public floorY = 480
   public background!: Sprite
@@ -46,7 +45,7 @@ export class FightingScene extends Container implements IScene {
   public player2!: Fighter
   public player2Options = {
     initialPosition: {
-      x: 600,
+      x: 400,
       y: -123
     }
   }
@@ -59,15 +58,19 @@ export class FightingScene extends Container implements IScene {
     this.setup(options)
     this.draw(options)
     this.setupFighters()
+    this.setupEventLesteners()
   }
 
   setup ({ viewWidth, viewHeight, player1Textures, player2Textures, textures: { backgroundTexture, shopTexture } }: IFightingSceneOptions): void {
     this.player1 = new Fighter({
+      attackFrame: 4,
+      moveSpeed: 5,
+      jumpSpeed: 20,
       box: {
-        toTop: 0,
-        toRight: 0,
+        toTop: 70,
+        toRight: 30,
         toBottom: 55,
-        toLeft: 0
+        toLeft: 30
       },
       textures: player1Textures,
       texturesOptions: {
@@ -87,11 +90,14 @@ export class FightingScene extends Container implements IScene {
     })
 
     this.player2 = new Fighter({
+      attackFrame: 2,
+      moveSpeed: 6,
+      jumpSpeed: 22,
       box: {
-        toTop: 0,
-        toRight: 0,
+        toTop: 70,
+        toRight: 17,
         toBottom: 70,
-        toLeft: 0
+        toLeft: 27
       },
       textures: player2Textures,
       texturesOptions: {
@@ -196,19 +202,42 @@ export class FightingScene extends Container implements IScene {
   }
 
   handleUpdate (): void {
-    this.iter++
     [this.player1, this.player2].forEach(player => {
-      const playerBottom = player.y + player.height / 2 + player.box.toBottom
-      logFighterBounds(`px=${player.x} py=${player.y} ph=${player.height} to-bot=${player.box.toBottom} bot=${playerBottom}`)
-      if (playerBottom + player.velocity.vy >= this.floorY) {
-        logFighterBounds(`Floor bot=${playerBottom} vy=${player.velocity.vy} fl=${this.floorY}`)
+      if (player.directionPressed.top && player.velocity.vy === 0) {
+        player.velocity.vy = -player.jumpSpeed
+      }
+      if (player.directionPressed.left) {
+        player.velocity.vx = -player.moveSpeed
+      } else if (player.directionPressed.right) {
+        player.velocity.vx = player.moveSpeed
+      } else {
+        player.velocity.vx = 0
+      }
+
+      const { bottom, left, right } = player.toBounds()
+      logFighterBounds(`px=${player.x} py=${player.y} ph=${player.height} to-bot=${player.box.toBottom} bot=${bottom}`)
+      if (bottom + player.velocity.vy >= this.floorY) {
+        logFighterGravity(`Floor bot=${bottom} vy=${player.velocity.vy} fl=${this.floorY}`)
         player.velocity.vy = 0
         player.position.y = this.floorY - (player.height / 2 + player.box.toBottom)
       } else {
-        logFighterBounds(`Gravity bot=${playerBottom} vy=${player.velocity.vy} fl=${this.floorY}`)
+        logFighterGravity(`Gravity bot=${bottom} vy=${player.velocity.vy} fl=${this.floorY}`)
         player.velocity.vy += this.gravity
         player.position.y += player.velocity.vy
       }
+
+      logFighterMove(`Move left=${left} right=${right} vy=${player.velocity.vx}`)
+      if (left + player.velocity.vx < 0) {
+        player.velocity.vx = 0
+        player.position.x = 0 - (player.width / 2 - player.box.toLeft)
+      } else if (right + player.velocity.vx > this.background.width) {
+        player.velocity.vx = 0
+        player.position.x = this.background.width - (player.width / 2 + player.box.toRight)
+      } else {
+        player.position.x += player.velocity.vx
+      }
+
+      player.updateAnimation()
     })
   }
 
@@ -222,5 +251,107 @@ export class FightingScene extends Container implements IScene {
     const { player1, player1Options, player2, player2Options } = this
     player1.position = player1Options.initialPosition
     player2.position = player2Options.initialPosition
+  }
+
+  setupEventLesteners (): void {
+    this.background.interactive = true
+    this.on('mousedown', (e) => {
+      const point = this.background.toLocal(e.global)
+      logPointerEvent(`${e.type} px=${point.x} py=${point.y}`)
+      this.player1.handleMove(true, point.x, point.y)
+    })
+    this.on('mousemove', (e) => {
+      const point = this.background.toLocal(e.global)
+      logPointerEvent(`${e.type} px=${point.x} py=${point.y}`)
+      this.player1.handleMove(undefined, point.x, point.y)
+    })
+    this.on('mouseup', (e) => {
+      const point = this.background.toLocal(e.global)
+      logPointerEvent(`${e.type} px=${point.x} py=${point.y}`)
+      this.player1.handleMove(false, point.x, point.y)
+    })
+    this.on('touchstart', (e) => {
+      const point = this.background.toLocal(e.global)
+      logPointerEvent(`${e.type} px=${point.x} py=${point.y}`)
+      this.player2.handleMove(true, point.x, point.y)
+    })
+    this.on('touchmove', (e) => {
+      const point = this.background.toLocal(e.global)
+      logPointerEvent(`${e.type} px=${point.x} py=${point.y}`)
+      this.player2.handleMove(undefined, point.x, point.y)
+    })
+    this.on('touchend', (e) => {
+      const point = this.background.toLocal(e.global)
+      logPointerEvent(`${e.type} px=${point.x} py=${point.y}`)
+      this.player2.handleMove(false, point.x, point.y)
+    })
+    window.addEventListener('keydown', this.handleKeyDown)
+    window.addEventListener('keyup', this.handleKeyUp)
+  }
+
+  handleKeyDown = (e: KeyboardEvent): void => {
+    const { player1, player2 } = this
+    logKeydown(`${e.code} ${e.key}`)
+    switch (e.code) {
+      case 'KeyW':
+        player1.directionPressed.top = true
+        break
+      case 'KeyA':
+        player1.directionPressed.left = true
+        break
+      case 'KeyS': case 'Space': case 'ShiftLeft':
+        player1.attackStarted = true
+        break
+      case 'KeyD':
+        player1.directionPressed.right = true
+        break
+    }
+    switch (e.code) {
+      case 'ArrowUp':
+        player2.directionPressed.top = true
+        break
+      case 'ArrowLeft':
+        player2.directionPressed.left = true
+        break
+      case 'ArrowDown': case 'Numpad0': case 'ShiftRight':
+        player2.attackStarted = true
+        break
+      case 'ArrowRight':
+        player2.directionPressed.right = true
+        break
+    }
+  }
+
+  handleKeyUp = (e: KeyboardEvent): void => {
+    const { player1, player2 } = this
+    logKeyup(`${e.code} ${e.key}`)
+    switch (e.code) {
+      case 'KeyW':
+        player1.directionPressed.top = false
+        break
+      case 'KeyA':
+        player1.directionPressed.left = false
+        break
+      case 'KeyS':
+        player1.directionPressed.bottom = false
+        break
+      case 'KeyD':
+        player1.directionPressed.right = false
+        break
+    }
+    switch (e.code) {
+      case 'ArrowUp':
+        player2.directionPressed.top = false
+        break
+      case 'ArrowLeft':
+        player2.directionPressed.left = false
+        break
+      case 'ArrowDown':
+        player2.directionPressed.bottom = false
+        break
+      case 'ArrowRight':
+        player2.directionPressed.right = false
+        break
+    }
   }
 }

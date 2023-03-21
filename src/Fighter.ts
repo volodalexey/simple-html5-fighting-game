@@ -3,6 +3,9 @@ import { logAttackBox } from './logger'
 import { type MoveInterface } from './MoveInterface'
 
 export interface IFighterOptions {
+  attackFrame: number
+  moveSpeed: number
+  jumpSpeed: number
   box: {
     toTop: number
     toRight: number
@@ -44,6 +47,17 @@ export enum FighterAnimation {
 
 export class Fighter extends Container {
   static ANIMATION = FighterAnimation
+  public isPressed = false
+  public moveSpeed!: number
+  public jumpSpeed!: number
+
+  public directionPressed: Record<'top' | 'right' | 'bottom' | 'left', boolean> = {
+    top: false,
+    right: false,
+    bottom: false,
+    left: false
+  }
+
   public spritesScale = 2.5
   public box!: {
     toTop: number
@@ -56,6 +70,10 @@ export class Fighter extends Container {
     vx: 0,
     vy: 0
   }
+
+  public attackFrame!: number
+  public attackStarted = false
+  public attackDone = false
 
   public animation = FighterAnimation.idle
   public idle!: AnimatedSprite
@@ -76,7 +94,10 @@ export class Fighter extends Container {
 
   constructor (options: IFighterOptions) {
     super()
+    this.attackFrame = options.attackFrame
     this.box = options.box
+    this.moveSpeed = options.moveSpeed
+    this.jumpSpeed = options.jumpSpeed
     this.setup(options)
     this.draw(options)
 
@@ -161,7 +182,43 @@ export class Fighter extends Container {
     })
   }
 
+  handleMove (pressed: boolean | undefined, x: number, y: number): void {
+    const { directionPressed } = this
+    if (typeof pressed === 'boolean') {
+      this.isPressed = pressed
+    }
+
+    directionPressed.top = false
+    directionPressed.right = false
+    directionPressed.bottom = false
+    directionPressed.left = false
+    if (this.isPressed) {
+      const { top, right, bottom, left } = this.toBounds()
+
+      if (x >= right) {
+        directionPressed.right = true
+      } else if (x <= left) {
+        directionPressed.left = true
+      }
+
+      if (y >= bottom) {
+        directionPressed.bottom = true
+      } else if (y <= top) {
+        directionPressed.top = true
+      }
+
+      if (x < right && x > left && y > top && y < bottom) {
+        this.attackStarted = true
+      }
+    }
+  }
+
+  isAttacking (): boolean {
+    return this.animation === FighterAnimation.attack
+  }
+
   switchAnimation (animation: FighterAnimation): void {
+    this.isAttacking()
     this.stopAllAnimations()
     switch (animation) {
       case FighterAnimation.idle:
@@ -190,5 +247,45 @@ export class Fighter extends Container {
         break
     }
     this.animation = animation
+  }
+
+  toBounds (): { midHor: number, midVer: number, top: number, right: number, bottom: number, left: number } {
+    const midHor = this.x + this.width / 2
+    const midVer = this.y + this.height / 2
+    return {
+      midHor,
+      midVer,
+      top: midVer - this.box.toTop,
+      right: midHor + this.box.toRight,
+      bottom: midVer + this.box.toBottom,
+      left: midHor - this.box.toLeft
+    }
+  }
+
+  updateAnimation (): void {
+    if (this.isAttacking()) {
+      this.attackDone = false
+      if (this.attack.currentFrame === this.attackFrame) {
+        this.attackDone = true
+      } else if (this.attack.currentFrame === this.attack.totalFrames - 1) {
+        this.switchAnimation(Fighter.ANIMATION.idle)
+      }
+    } else {
+      this.switchAnimation(Fighter.ANIMATION.idle)
+      if (this.velocity.vy < 0) {
+        this.switchAnimation(Fighter.ANIMATION.jump)
+      } else if (this.velocity.vy > 0) {
+        this.switchAnimation(Fighter.ANIMATION.fall)
+      }
+      if (this.velocity.vy === 0 && this.velocity.vx !== 0) {
+        this.switchAnimation(Fighter.ANIMATION.run)
+      }
+    }
+
+    if (this.attackStarted && !this.isAttacking()) {
+      this.attackStarted = false
+      this.attack.currentFrame = 0
+      this.switchAnimation(Fighter.ANIMATION.attack)
+    }
   }
 }
