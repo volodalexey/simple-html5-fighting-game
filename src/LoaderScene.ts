@@ -69,8 +69,6 @@ export class LoaderScene extends Container implements IScene {
     await Assets.init({ manifest })
 
     await Assets.loadBundle(manifest.bundles.map(bundle => bundle.name), this.downloadProgress)
-
-    throw new Error('some error')
   }
 
   private readonly downloadProgress = (progressRatio: number): void => {
