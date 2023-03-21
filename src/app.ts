@@ -44,4 +44,16 @@ async function run (): Promise<void> {
   }))
 }
 
-run().catch(console.error)
+run().catch((err) => {
+  console.error(err)
+  const div = document.createElement('div')
+  const divStack = document.createElement('div')
+  document.body.prepend(div)
+  document.body.prepend(divStack)
+  div.style.color = 'red'
+  div.style.fontSize = '2rem'
+  div.innerText = ((Boolean(err)) && (Boolean(err.message))) ? err.message : err
+  divStack.style.color = 'red'
+  divStack.style.fontSize = '2rem'
+  divStack.innerText = ((Boolean(err)) && (Boolean(err.stack))) ? err.stack : ''
+})
