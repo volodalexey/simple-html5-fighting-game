@@ -29,7 +29,8 @@ async function run (): Promise<void> {
       jumpTexture: animations['Mack-Jump'],
       fallTexture: animations['Mack-Fall'],
       attackTexture: animations['Mack-Attack1'],
-      deathTexture: animations['Mack-Death']
+      deathTexture: animations['Mack-Death'],
+      takeHitTexture: animations['Mack-Take-Hit']
     },
     player2Textures: {
       idleTexture: animations['Kenji-Idle'],
@@ -37,7 +38,8 @@ async function run (): Promise<void> {
       jumpTexture: animations['Kenji-Jump'],
       fallTexture: animations['Kenji-Fall'],
       attackTexture: animations['Kenji-Attack1'],
-      deathTexture: animations['Kenji-Death']
+      deathTexture: animations['Kenji-Death'],
+      takeHitTexture: animations['Kenji-Take-Hit']
     }
   }))
 }

@@ -3,7 +3,7 @@ import { logApp } from './logger'
 
 export interface IScene extends DisplayObject {
   handleMounted: () => void
-  handleUpdate: () => void
+  handleUpdate: (deltaMS: number) => void
   handleResize: (options: {
     viewWidth: number
     viewHeight: number
@@ -112,6 +112,6 @@ export abstract class SceneManager {
   }
 
   public static updateHandler (): void {
-    SceneManager.currentScene.handleUpdate()
+    SceneManager.currentScene.handleUpdate(SceneManager.app.ticker.deltaMS)
   }
 }

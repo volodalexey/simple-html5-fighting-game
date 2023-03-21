@@ -1,8 +1,8 @@
 import { AnimatedSprite, Container, Graphics, type Texture } from 'pixi.js'
-import { logAttackBox } from './logger'
-import { type MoveInterface } from './MoveInterface'
+import { logAttackBox, logDamage, logFighterBounds, logFighterGravity, logFighterMove } from './logger'
 
 export interface IFighterOptions {
+  attackDamage: number
   attackFrame: number
   moveSpeed: number
   jumpSpeed: number
@@ -19,6 +19,7 @@ export interface IFighterOptions {
     fallTexture: Texture[]
     attackTexture: Texture[]
     deathTexture: Texture[]
+    takeHitTexture: Texture[]
   }
   texturesOptions: {
     offset: {
@@ -43,6 +44,7 @@ export enum FighterAnimation {
   fall = 'fall',
   attack = 'attack',
   death = 'death',
+  takeHit = 'takeHit',
 }
 
 export class Fighter extends Container {
@@ -72,9 +74,12 @@ export class Fighter extends Container {
   }
 
   public attackFrame!: number
-  public attackStarted = false
-  public attackDone = false
+  public attackHitAvailable = false
+  public attackHitProcessed = false
+  public attackDamage!: number
 
+  public health = 100
+  public isDead = false
   public animation = FighterAnimation.idle
   public idle!: AnimatedSprite
   public run!: AnimatedSprite
@@ -82,6 +87,7 @@ export class Fighter extends Container {
   public fall!: AnimatedSprite
   public attack!: AnimatedSprite
   public death!: AnimatedSprite
+  public takeHit!: AnimatedSprite
   public spritesBox!: Graphics
   public fighterBox!: Graphics
   public attackBox!: Graphics
@@ -90,10 +96,9 @@ export class Fighter extends Container {
     attackBoxColor: 0xff00ff
   }
 
-  public moveInterface!: MoveInterface
-
   constructor (options: IFighterOptions) {
     super()
+    this.attackDamage = options.attackDamage
     this.attackFrame = options.attackFrame
     this.box = options.box
     this.moveSpeed = options.moveSpeed
@@ -112,7 +117,8 @@ export class Fighter extends Container {
       jumpTexture,
       fallTexture,
       attackTexture,
-      deathTexture
+      deathTexture,
+      takeHitTexture
     }
   }: IFighterOptions): void {
     const { settings } = this
@@ -153,6 +159,11 @@ export class Fighter extends Container {
     spritesContainer.addChild(death)
     this.death = death
 
+    const takeHit = new AnimatedSprite(takeHitTexture)
+    takeHit.animationSpeed = settings.animationSpeed
+    spritesContainer.addChild(takeHit)
+    this.takeHit = takeHit
+
     this.addChild(spritesContainer)
 
     const fighterBox = new Graphics()
@@ -165,7 +176,7 @@ export class Fighter extends Container {
     this.addChild(attackBox)
     this.attackBox = attackBox
 
-    this.scale.set(2.5, 2.5)
+    this.scale.set(this.spritesScale, this.spritesScale)
   }
 
   draw ({ attackOptions: { width, height } }: IFighterOptions): void {
@@ -176,10 +187,22 @@ export class Fighter extends Container {
   }
 
   stopAllAnimations (): void {
-    [this.idle, this.run, this.jump, this.fall, this.attack, this.death].forEach(spr => {
-      spr.visible = false
+    [this.idle, this.run, this.jump, this.fall, this.attack, this.death, this.takeHit].forEach(spr => {
       spr.stop()
     })
+  }
+
+  hideAllAnimations (): void {
+    [this.idle, this.run, this.jump, this.fall, this.attack, this.death, this.takeHit].forEach(spr => {
+      spr.visible = false
+    })
+  }
+
+  releaseAllPressures (): void {
+    this.directionPressed.top = false
+    this.directionPressed.right = false
+    this.directionPressed.bottom = false
+    this.directionPressed.left = false
   }
 
   handleMove (pressed: boolean | undefined, x: number, y: number): void {
@@ -188,10 +211,7 @@ export class Fighter extends Container {
       this.isPressed = pressed
     }
 
-    directionPressed.top = false
-    directionPressed.right = false
-    directionPressed.bottom = false
-    directionPressed.left = false
+    this.releaseAllPressures()
     if (this.isPressed) {
       const { top, right, bottom, left } = this.toBounds()
 
@@ -208,7 +228,7 @@ export class Fighter extends Container {
       }
 
       if (x < right && x > left && y > top && y < bottom) {
-        this.attackStarted = true
+        directionPressed.bottom = true
       }
     }
   }
@@ -217,8 +237,17 @@ export class Fighter extends Container {
     return this.animation === FighterAnimation.attack
   }
 
+  isDying (): boolean {
+    return this.animation === FighterAnimation.death
+  }
+
+  isTakingHit (): boolean {
+    return this.animation === FighterAnimation.takeHit
+  }
+
   switchAnimation (animation: FighterAnimation): void {
     this.isAttacking()
+    this.hideAllAnimations()
     this.stopAllAnimations()
     switch (animation) {
       case FighterAnimation.idle:
@@ -240,6 +269,12 @@ export class Fighter extends Container {
       case FighterAnimation.attack:
         this.attack.play()
         this.attack.visible = true
+        this.attack.currentFrame = 0
+        break
+      case FighterAnimation.takeHit:
+        this.takeHit.play()
+        this.takeHit.visible = true
+        this.takeHit.currentFrame = 0
         break
       case FighterAnimation.death:
         this.death.play()
@@ -249,12 +284,15 @@ export class Fighter extends Container {
     this.animation = animation
   }
 
-  toBounds (): { midHor: number, midVer: number, top: number, right: number, bottom: number, left: number } {
+  toBounds (): {
+    top: number
+    right: number
+    bottom: number
+    left: number
+  } {
     const midHor = this.x + this.width / 2
     const midVer = this.y + this.height / 2
     return {
-      midHor,
-      midVer,
       top: midVer - this.box.toTop,
       right: midHor + this.box.toRight,
       bottom: midVer + this.box.toBottom,
@@ -262,16 +300,43 @@ export class Fighter extends Container {
     }
   }
 
+  toAttackBounds (): {
+    top: number
+    right: number
+    bottom: number
+    left: number
+  } {
+    const x = this.x + this.attackBox.x * this.spritesScale
+    const y = this.y + this.attackBox.y * this.spritesScale
+    return {
+      top: y,
+      right: x + this.attackBox.width * this.spritesScale,
+      bottom: y + this.attackBox.height * this.spritesScale,
+      left: x
+    }
+  }
+
   updateAnimation (): void {
-    if (this.isAttacking()) {
-      this.attackDone = false
-      if (this.attack.currentFrame === this.attackFrame) {
-        this.attackDone = true
+    if (this.isDying()) {
+      if (this.death.currentFrame === this.death.totalFrames - 1) {
+        this.death.stop()
+        this.isDead = true
+      }
+    } else if (this.isAttacking()) {
+      if (this.attack.currentFrame === this.attackFrame && !this.attackHitProcessed) {
+        this.attackHitAvailable = true
       } else if (this.attack.currentFrame === this.attack.totalFrames - 1) {
         this.switchAnimation(Fighter.ANIMATION.idle)
       }
     } else {
-      this.switchAnimation(Fighter.ANIMATION.idle)
+      if (this.isTakingHit()) {
+        if (this.takeHit.currentFrame === this.takeHit.totalFrames - 1) {
+          this.switchAnimation(Fighter.ANIMATION.idle)
+        }
+        // animate take hit
+      } else {
+        this.switchAnimation(Fighter.ANIMATION.idle)
+      }
       if (this.velocity.vy < 0) {
         this.switchAnimation(Fighter.ANIMATION.jump)
       } else if (this.velocity.vy > 0) {
@@ -282,10 +347,72 @@ export class Fighter extends Container {
       }
     }
 
-    if (this.attackStarted && !this.isAttacking()) {
-      this.attackStarted = false
-      this.attack.currentFrame = 0
+    if (this.directionPressed.bottom && !this.isAttacking()) {
+      this.directionPressed.bottom = false
+      this.attackHitAvailable = false
+      this.attackHitProcessed = false
       this.switchAnimation(Fighter.ANIMATION.attack)
+    }
+  }
+
+  update ({
+    gravity,
+    levelLeft,
+    levelRight,
+    levelBottom
+  }: {
+    gravity: number
+    levelLeft: number
+    levelRight: number
+    levelBottom: number
+  }): void {
+    if (this.directionPressed.top && this.velocity.vy === 0) {
+      this.velocity.vy = -this.jumpSpeed
+    }
+    if (this.directionPressed.left) {
+      this.velocity.vx = -this.moveSpeed
+    } else if (this.directionPressed.right) {
+      this.velocity.vx = this.moveSpeed
+    } else {
+      this.velocity.vx = 0
+    }
+
+    const { bottom, left, right } = this.toBounds()
+    logFighterBounds(`px=${this.x} py=${this.y} ph=${this.height} to-bot=${this.box.toBottom} bot=${bottom}`)
+    if (bottom + this.velocity.vy >= levelBottom) {
+      logFighterGravity(`Floor bot=${bottom} vy=${this.velocity.vy} fl=${levelBottom}`)
+      this.velocity.vy = 0
+      this.position.y = levelBottom - (this.height / 2 + this.box.toBottom)
+    } else {
+      logFighterGravity(`Gravity bot=${bottom} vy=${this.velocity.vy} fl=${levelBottom}`)
+      this.velocity.vy += gravity
+      this.position.y += this.velocity.vy
+    }
+
+    logFighterMove(`Move left=${left} right=${right} vy=${this.velocity.vx}`)
+    if (left + this.velocity.vx < levelLeft) {
+      this.velocity.vx = 0
+      this.position.x = levelLeft - (this.width / 2 - this.box.toLeft)
+    } else if (right + this.velocity.vx > levelRight) {
+      this.velocity.vx = 0
+      this.position.x = levelRight - (this.width / 2 + this.box.toRight)
+    } else {
+      this.position.x += this.velocity.vx
+    }
+
+    this.updateAnimation()
+  }
+
+  takeDamage (damage: number): void {
+    logDamage(`health=${this.health} damage=${damage}`)
+    this.health -= damage
+    logDamage(`health=${this.health}`)
+    if (this.health <= 0) {
+      this.health = 0
+      this.releaseAllPressures()
+      this.switchAnimation(FighterAnimation.death)
+    } else {
+      this.switchAnimation(FighterAnimation.takeHit)
     }
   }
 }

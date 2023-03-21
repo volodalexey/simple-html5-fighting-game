@@ -1,8 +1,9 @@
-import { AnimatedSprite, Container, Graphics, Sprite, type Texture, Text } from 'pixi.js'
+import { AnimatedSprite, Container, type FederatedPointerEvent, Graphics, Sprite, type Texture } from 'pixi.js'
+import { StatusBar } from './StatusBar'
 import { Fighter, type IFighterOptions } from './Fighter'
-import { logFighterBounds, logFighterGravity, logFighterMove, logKeydown, logKeyup, logLayout, logPointerEvent } from './logger'
-import { MoveInterface } from './MoveInterface'
+import { logDamage, logKeydown, logKeyup, logLayout, logPointerEvent } from './logger'
 import { type IScene } from './SceneManager'
+import { Collision } from './Collision'
 
 interface IFightingSceneOptions {
   viewWidth: number
@@ -50,19 +51,19 @@ export class FightingScene extends Container implements IScene {
     }
   }
 
-  public moveInterface1!: MoveInterface
-  public moveInterface2!: MoveInterface
+  public statusBar!: StatusBar
 
   constructor (options: IFightingSceneOptions) {
     super()
     this.setup(options)
     this.draw(options)
     this.setupFighters()
-    this.setupEventLesteners()
+    this.addEventLesteners()
   }
 
   setup ({ viewWidth, viewHeight, player1Textures, player2Textures, textures: { backgroundTexture, shopTexture } }: IFightingSceneOptions): void {
     this.player1 = new Fighter({
+      attackDamage: 25,
       attackFrame: 4,
       moveSpeed: 5,
       jumpSpeed: 20,
@@ -90,6 +91,7 @@ export class FightingScene extends Container implements IScene {
     })
 
     this.player2 = new Fighter({
+      attackDamage: 12,
       attackFrame: 2,
       moveSpeed: 6,
       jumpSpeed: 22,
@@ -116,7 +118,7 @@ export class FightingScene extends Container implements IScene {
       }
     })
 
-    const { shopSettings, player1, player2 } = this
+    const { shopSettings } = this
     const background = new Sprite(backgroundTexture)
     this.addChild(background)
     this.background = background
@@ -134,28 +136,9 @@ export class FightingScene extends Container implements IScene {
     this.addChild(overlay)
     this.overlay = overlay
 
-    const moveInterface1 = new MoveInterface({
-      viewWidth,
-      viewHeight,
-      playerWidth: player1.width,
-      playerHeight: player1.height
-    })
-    this.addChild(moveInterface1)
-    this.moveInterface1 = moveInterface1
-
-    const moveInterface2 = new MoveInterface({
-      viewWidth,
-      viewHeight,
-      playerWidth: player2.width,
-      playerHeight: player2.height
-    })
-    this.addChild(moveInterface2)
-    this.moveInterface2 = moveInterface2
-
-    this.addChild(new Text('hoho', {
-      fontFamily: 'Press Start 2P',
-      fontSize: 40
-    }))
+    const statusBar = new StatusBar({})
+    this.addChild(statusBar)
+    this.statusBar = statusBar
   }
 
   draw (_: IFightingSceneOptions): void {
@@ -201,44 +184,42 @@ export class FightingScene extends Container implements IScene {
     logLayout(`x=${x} y=${y} w=${this.width} h=${this.height}`)
   }
 
-  handleUpdate (): void {
+  handleUpdate (deltaMS: number): void {
+    this.statusBar.update(deltaMS);
     [this.player1, this.player2].forEach(player => {
-      if (player.directionPressed.top && player.velocity.vy === 0) {
-        player.velocity.vy = -player.jumpSpeed
-      }
-      if (player.directionPressed.left) {
-        player.velocity.vx = -player.moveSpeed
-      } else if (player.directionPressed.right) {
-        player.velocity.vx = player.moveSpeed
-      } else {
-        player.velocity.vx = 0
-      }
-
-      const { bottom, left, right } = player.toBounds()
-      logFighterBounds(`px=${player.x} py=${player.y} ph=${player.height} to-bot=${player.box.toBottom} bot=${bottom}`)
-      if (bottom + player.velocity.vy >= this.floorY) {
-        logFighterGravity(`Floor bot=${bottom} vy=${player.velocity.vy} fl=${this.floorY}`)
-        player.velocity.vy = 0
-        player.position.y = this.floorY - (player.height / 2 + player.box.toBottom)
-      } else {
-        logFighterGravity(`Gravity bot=${bottom} vy=${player.velocity.vy} fl=${this.floorY}`)
-        player.velocity.vy += this.gravity
-        player.position.y += player.velocity.vy
-      }
-
-      logFighterMove(`Move left=${left} right=${right} vy=${player.velocity.vx}`)
-      if (left + player.velocity.vx < 0) {
-        player.velocity.vx = 0
-        player.position.x = 0 - (player.width / 2 - player.box.toLeft)
-      } else if (right + player.velocity.vx > this.background.width) {
-        player.velocity.vx = 0
-        player.position.x = this.background.width - (player.width / 2 + player.box.toRight)
-      } else {
-        player.position.x += player.velocity.vx
-      }
-
-      player.updateAnimation()
+      player.update({
+        gravity: this.gravity,
+        levelLeft: 0,
+        levelRight: this.background.width,
+        levelBottom: this.floorY
+      })
     })
+
+    if (this.player1.attackHitAvailable && !this.player1.attackHitProcessed) {
+      this.player1.attackHitProcessed = true
+      const p1AttackBounds = this.player1.toAttackBounds()
+      const p2Bounds = this.player2.toBounds()
+      const intersectionSquare = Collision.checkCollision(p1AttackBounds, p2Bounds)
+      logDamage(`inter=${intersectionSquare}`)
+      if (intersectionSquare >= 0.05) {
+        this.player2.takeDamage(Math.round(intersectionSquare * this.player1.attackDamage))
+        this.statusBar.updatePlayer2Health(this.player2.health)
+      }
+    }
+
+    if (this.player2.attackHitAvailable && !this.player2.attackHitProcessed) {
+      this.player2.attackHitProcessed = true
+      const p2AttackBounds = this.player2.toAttackBounds()
+      const p1Bounds = this.player1.toBounds()
+      const intersectionSquare = Collision.checkCollision(p2AttackBounds, p1Bounds)
+      logDamage(`inter=${intersectionSquare}`)
+      if (intersectionSquare >= 0.05) {
+        this.player1.takeDamage(Math.round(intersectionSquare * this.player2.attackDamage))
+        this.statusBar.updatePlayer1Health(this.player1.health)
+      }
+    }
+
+    this.checkEndFight()
   }
 
   handleMounted (): void {
@@ -253,40 +234,58 @@ export class FightingScene extends Container implements IScene {
     player2.position = player2Options.initialPosition
   }
 
-  setupEventLesteners (): void {
+  addEventLesteners (): void {
     this.background.interactive = true
-    this.on('mousedown', (e) => {
-      const point = this.background.toLocal(e.global)
-      logPointerEvent(`${e.type} px=${point.x} py=${point.y}`)
-      this.player1.handleMove(true, point.x, point.y)
-    })
-    this.on('mousemove', (e) => {
-      const point = this.background.toLocal(e.global)
-      logPointerEvent(`${e.type} px=${point.x} py=${point.y}`)
-      this.player1.handleMove(undefined, point.x, point.y)
-    })
-    this.on('mouseup', (e) => {
-      const point = this.background.toLocal(e.global)
-      logPointerEvent(`${e.type} px=${point.x} py=${point.y}`)
-      this.player1.handleMove(false, point.x, point.y)
-    })
-    this.on('touchstart', (e) => {
-      const point = this.background.toLocal(e.global)
-      logPointerEvent(`${e.type} px=${point.x} py=${point.y}`)
-      this.player2.handleMove(true, point.x, point.y)
-    })
-    this.on('touchmove', (e) => {
-      const point = this.background.toLocal(e.global)
-      logPointerEvent(`${e.type} px=${point.x} py=${point.y}`)
-      this.player2.handleMove(undefined, point.x, point.y)
-    })
-    this.on('touchend', (e) => {
-      const point = this.background.toLocal(e.global)
-      logPointerEvent(`${e.type} px=${point.x} py=${point.y}`)
-      this.player2.handleMove(false, point.x, point.y)
-    })
+    this.on('mousedown', this.handlePlayer1StartMove)
+    this.on('mousemove', this.handlePlayer1KeepMove)
+    this.on('mouseup', this.handlePlayer1StopMove)
+    this.on('touchstart', this.handlePlayer2StartMove)
+    this.on('touchmove', this.handlePlayer2KeepMove)
+    this.on('touchend', this.handlePlayer2StopMove)
     window.addEventListener('keydown', this.handleKeyDown)
     window.addEventListener('keyup', this.handleKeyUp)
+  }
+
+  removeEventListeners (): void {
+    this.background.interactive = false
+    this.off('mousedown', this.handlePlayer1StartMove)
+    this.off('mousemove', this.handlePlayer1KeepMove)
+    this.off('mouseup', this.handlePlayer1StopMove)
+    this.off('touchstart', this.handlePlayer2StartMove)
+    this.off('touchmove', this.handlePlayer2KeepMove)
+    this.off('touchend', this.handlePlayer2StopMove)
+    window.removeEventListener('keydown', this.handleKeyDown)
+    window.removeEventListener('keyup', this.handleKeyUp)
+  }
+
+  handlePlayer1Move (player: Fighter, pressed: boolean | undefined, e: FederatedPointerEvent): void {
+    const point = this.background.toLocal(e.global)
+    logPointerEvent(`${e.type} px=${point.x} py=${point.y}`)
+    player.handleMove(pressed, point.x, point.y)
+  }
+
+  handlePlayer1StartMove = (e: FederatedPointerEvent): void => {
+    this.handlePlayer1Move(this.player1, true, e)
+  }
+
+  handlePlayer1KeepMove = (e: FederatedPointerEvent): void => {
+    this.handlePlayer1Move(this.player1, undefined, e)
+  }
+
+  handlePlayer1StopMove = (e: FederatedPointerEvent): void => {
+    this.handlePlayer1Move(this.player1, false, e)
+  }
+
+  handlePlayer2StartMove = (e: FederatedPointerEvent): void => {
+    this.handlePlayer1Move(this.player2, true, e)
+  }
+
+  handlePlayer2KeepMove = (e: FederatedPointerEvent): void => {
+    this.handlePlayer1Move(this.player2, undefined, e)
+  }
+
+  handlePlayer2StopMove = (e: FederatedPointerEvent): void => {
+    this.handlePlayer1Move(this.player2, false, e)
   }
 
   handleKeyDown = (e: KeyboardEvent): void => {
@@ -300,7 +299,7 @@ export class FightingScene extends Container implements IScene {
         player1.directionPressed.left = true
         break
       case 'KeyS': case 'Space': case 'ShiftLeft':
-        player1.attackStarted = true
+        player1.directionPressed.bottom = true
         break
       case 'KeyD':
         player1.directionPressed.right = true
@@ -314,7 +313,7 @@ export class FightingScene extends Container implements IScene {
         player2.directionPressed.left = true
         break
       case 'ArrowDown': case 'Numpad0': case 'ShiftRight':
-        player2.attackStarted = true
+        player2.directionPressed.bottom = true
         break
       case 'ArrowRight':
         player2.directionPressed.right = true
@@ -352,6 +351,12 @@ export class FightingScene extends Container implements IScene {
       case 'ArrowRight':
         player2.directionPressed.right = false
         break
+    }
+  }
+
+  checkEndFight (): void {
+    if (this.player1.isDying() || this.player2.isDying()) {
+      console.log('END')
     }
   }
 }
