@@ -150,7 +150,7 @@ export class FightingScene extends Container implements IScene {
     const foreground = new Container()
     foreground.visible = false
     const foregroundText = new Text('...', {
-      fontFamily: 'Press Start 2P',
+      fontFamily: 'Press Start _2P',
       fontSize: this.foregroundSettings.size,
       fill: this.foregroundSettings.color
     })

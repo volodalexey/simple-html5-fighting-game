@@ -42,7 +42,7 @@ export class StatusBar extends Container {
     this.addChild(this.timerBox)
 
     const timerText = new Text(String(Math.round(this.time / 1000)), {
-      fontFamily: 'Press Start 2P',
+      fontFamily: 'Press Start _2P',
       fontSize: this.timerBoxOptions.textSize,
       fill: this.timerBoxOptions.text
     })

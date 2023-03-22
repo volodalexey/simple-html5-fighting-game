@@ -9,7 +9,12 @@ export const manifest: ResolverManifest = {
       assets: {
         spritesheet: 'assets/spritesheets/spritesheet.json',
         background: 'assets/images/background.png',
-        font: 'assets/fonts/Press_Start_2P.woff2'
+        font: {
+          src: 'assets/fonts/Press_Start_2P.woff2',
+          data: {
+            family: 'Press Start _2p'
+          }
+        }
       }
     }
   ]
