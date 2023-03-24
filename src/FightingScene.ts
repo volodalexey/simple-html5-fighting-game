@@ -70,7 +70,7 @@ export class FightingScene extends Container implements IScene {
 
   setup ({ viewWidth, viewHeight, player1Textures, player2Textures, textures: { backgroundTexture, shopTexture } }: IFightingSceneOptions): void {
     this.player1 = new Fighter({
-      attackDamage: 25,
+      attackDamage: 40,
       attackFrame: 4,
       moveSpeed: 5,
       jumpSpeed: 20,
@@ -198,10 +198,15 @@ export class FightingScene extends Container implements IScene {
     const x = availableWidth > occupiedWidth ? (availableWidth - occupiedWidth) / 2 : 0
     const y = availableHeight > occupiedHeight ? (availableHeight - occupiedHeight) / 2 : 0
     logLayout(`aw=${availableWidth} (ow=${occupiedWidth}) x=${x} ah=${availableHeight} (oh=${occupiedHeight}) y=${y}`)
+    // switch off re-calculation based on fighters sprites
+    this.player1.visible = false
+    this.player2.visible = false
     this.x = x
     this.width = occupiedWidth
     this.y = y
     this.height = occupiedHeight
+    this.player1.visible = true
+    this.player2.visible = true
     logLayout(`x=${x} y=${y} w=${this.width} h=${this.height}`)
   }
 

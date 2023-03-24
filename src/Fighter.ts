@@ -297,14 +297,12 @@ export class Fighter extends Container {
         this.fall.visible = true
         break
       case FighterAnimation.attack:
-        this.attack.play()
+        this.attack.gotoAndPlay(0)
         this.attack.visible = true
-        this.attack.currentFrame = 0
         break
       case FighterAnimation.takeHit:
-        this.takeHit.play()
+        this.takeHit.gotoAndPlay(0)
         this.takeHit.visible = true
-        this.takeHit.currentFrame = 0
         break
       case FighterAnimation.death:
         this.death.play()
