@@ -417,8 +417,8 @@ export class Fighter extends Container {
       this.position.y = levelBottom - (this.height / 2 + this.box.toBottom)
     } else {
       logFighterGravity(`Gravity bot=${bottom} vy=${this.velocity.vy} fl=${levelBottom}`)
-      this.velocity.vy += gravity
       this.position.y += this.velocity.vy
+      this.velocity.vy += gravity
     }
 
     logFighterMove(`Move left=${left} right=${right} vy=${this.velocity.vx}`)
