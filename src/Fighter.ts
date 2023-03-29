@@ -447,4 +447,13 @@ export class Fighter extends Container {
       this.switchAnimation(FighterAnimation.takeHit)
     }
   }
+
+  restart (): void {
+    this.health = 100
+    this.releaseAllPressures()
+    this.switchAnimation(FighterAnimation.idle)
+    this.velocity.vx = 0
+    this.velocity.vy = 0
+    this.isDead = false
+  }
 }

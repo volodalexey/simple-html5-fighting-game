@@ -14,7 +14,8 @@ export class StatusBar extends Container {
     healthWidth: 442
   }
 
-  public time = 90 * 1000
+  public maxTime = 90 * 1000
+  public time!: number
   public timerBox!: Graphics
   public timerBoxOptions = {
     textSize: 16,
@@ -34,6 +35,7 @@ export class StatusBar extends Container {
     super()
     this.setup(options)
     this.draw(options)
+    this.time = this.maxTime
   }
 
   setup (_: IStatusBarOptions): void {
@@ -108,5 +110,11 @@ export class StatusBar extends Container {
     gsap.to(this.player2HealthBar.fillBar, {
       width: this.player2HealthBar.boxOptions.width * health / 100
     })
+  }
+
+  restart ({ player1Health, player2Health }: { player1Health: number, player2Health: number }): void {
+    this.time = this.maxTime
+    this.updatePlayer1Health(player1Health)
+    this.updatePlayer2Health(player2Health)
   }
 }

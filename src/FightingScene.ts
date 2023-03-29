@@ -1,9 +1,10 @@
-import { AnimatedSprite, Container, type FederatedPointerEvent, Graphics, Sprite, type Texture, Text } from 'pixi.js'
+import { AnimatedSprite, Container, type FederatedPointerEvent, Graphics, Sprite, type Texture } from 'pixi.js'
 import { StatusBar } from './StatusBar'
 import { Fighter, type IFighterOptions } from './Fighter'
 import { logDamage, logKeydown, logKeyup, logLayout, logPointerEvent } from './logger'
 import { type IScene } from './SceneManager'
 import { Collision } from './Collision'
+import { StartModal } from './StartModal'
 
 interface IFightingSceneOptions {
   viewWidth: number
@@ -20,8 +21,7 @@ export class FightingScene extends Container implements IScene {
   public gravity = 0.7
   public floorY = 480
   public background!: Sprite
-  public foreground!: Container
-  public foregroundText!: Text
+  public startModal!: StartModal
   public shop!: AnimatedSprite
   public overlay!: Graphics
 
@@ -35,11 +35,6 @@ export class FightingScene extends Container implements IScene {
   public overlaySettings = {
     color: 0xffffff,
     alpha: 0.15
-  }
-
-  public foregroundSettings = {
-    size: 16,
-    color: 0xffffff
   }
 
   public player1!: Fighter
@@ -64,11 +59,32 @@ export class FightingScene extends Container implements IScene {
     super()
     this.setup(options)
     this.draw(options)
-    this.setupFighters()
     this.addEventLesteners()
   }
 
   setup ({ viewWidth, viewHeight, player1Textures, player2Textures, textures: { backgroundTexture, shopTexture } }: IFightingSceneOptions): void {
+    const { shopSettings } = this
+    const background = new Sprite(backgroundTexture)
+    this.addChild(background)
+    this.background = background
+
+    const shop = new AnimatedSprite(shopTexture)
+    shop.animationSpeed = shopSettings.animationSpeed
+    shop.play()
+    shop.scale.set(shopSettings.scale)
+    shop.position.x = shopSettings.x
+    shop.position.y = shopSettings.y
+    this.addChild(shop)
+    this.shop = shop
+
+    const overlay = new Graphics()
+    this.addChild(overlay)
+    this.overlay = overlay
+
+    const statusBar = new StatusBar({})
+    this.addChild(statusBar)
+    this.statusBar = statusBar
+
     this.player1 = new Fighter({
       attackDamage: 40,
       attackFrame: 4,
@@ -96,6 +112,8 @@ export class FightingScene extends Container implements IScene {
         height: 66
       }
     })
+    this.player1.position = this.player1Options.initialPosition
+    this.addChild(this.player1)
 
     this.player2 = new Fighter({
       attackDamage: 12,
@@ -124,42 +142,14 @@ export class FightingScene extends Container implements IScene {
         height: 60
       }
     })
+    this.player2.position = this.player2Options.initialPosition
+    this.addChild(this.player2)
 
-    const { shopSettings } = this
-    const background = new Sprite(backgroundTexture)
-    this.addChild(background)
-    this.background = background
-
-    const shop = new AnimatedSprite(shopTexture)
-    shop.animationSpeed = shopSettings.animationSpeed
-    shop.play()
-    shop.scale.set(shopSettings.scale)
-    shop.position.x = shopSettings.x
-    shop.position.y = shopSettings.y
-    this.addChild(shop)
-    this.shop = shop
-
-    const overlay = new Graphics()
-    this.addChild(overlay)
-    this.overlay = overlay
-
-    const statusBar = new StatusBar({})
-    this.addChild(statusBar)
-    this.statusBar = statusBar
-
-    const foreground = new Container()
-    foreground.visible = false
-    const foregroundText = new Text('...', {
-      fontFamily: 'Press Start _2P',
-      fontSize: this.foregroundSettings.size,
-      fill: this.foregroundSettings.color
-    })
-    foregroundText.anchor.set(0.5, 0.5)
-    foregroundText.position.set(this.width / 2, this.height / 2)
-    this.foregroundText = foregroundText
-    foreground.addChild(foregroundText)
-    this.addChild(foreground)
-    this.foreground = foreground
+    const startModal = new StartModal({ viewWidth, viewHeight })
+    startModal.visible = false
+    startModal.position.set(this.background.width / 2 - startModal.width / 2, this.background.height / 2 - startModal.height / 2)
+    this.addChild(startModal)
+    this.startModal = startModal
   }
 
   draw (_: IFightingSceneOptions): void {
@@ -167,11 +157,6 @@ export class FightingScene extends Container implements IScene {
     this.overlay.drawRect(0, 0, this.background.width, this.background.height)
     this.overlay.endFill()
     this.overlay.alpha = this.overlaySettings.alpha
-  }
-
-  setupFighters (): void {
-    this.addChild(this.player1)
-    this.addChild(this.player2)
   }
 
   handleResize ({ viewWidth, viewHeight }: { viewWidth: number, viewHeight: number }): void {
@@ -255,18 +240,6 @@ export class FightingScene extends Container implements IScene {
     this.checkEndFight()
   }
 
-  handleMounted (): void {
-    Promise.resolve().then(() => {
-      this.startFighters()
-    }).catch(console.error)
-  }
-
-  startFighters (): void {
-    const { player1, player1Options, player2, player2Options } = this
-    player1.position = player1Options.initialPosition
-    player2.position = player2Options.initialPosition
-  }
-
   addEventLesteners (): void {
     this.background.interactive = true
     this.on('mousedown', this.handlePlayer1StartMove)
@@ -277,6 +250,8 @@ export class FightingScene extends Container implements IScene {
     this.on('touchend', this.handlePlayer2StopMove)
     window.addEventListener('keydown', this.handleKeyDown)
     window.addEventListener('keyup', this.handleKeyUp)
+    this.startModal.interactive = true
+    this.startModal.on('click', this.startGame)
   }
 
   removeEventListeners (): void {
@@ -289,6 +264,8 @@ export class FightingScene extends Container implements IScene {
     this.off('touchend', this.handlePlayer2StopMove)
     window.removeEventListener('keydown', this.handleKeyDown)
     window.removeEventListener('keyup', this.handleKeyUp)
+    this.startModal.interactive = false
+    this.startModal.off('click', this.startGame)
   }
 
   handlePlayer1Move (player: Fighter, pressed: boolean | undefined, e: FederatedPointerEvent): void {
@@ -389,17 +366,28 @@ export class FightingScene extends Container implements IScene {
 
   checkEndFight (): void {
     if (this.player1.isDying() || this.player2.isDying() || this.statusBar.time <= 0) {
-      this.foreground.visible = true
       if (this.player1.health === this.player2.health) {
-        this.foregroundText.text = 'Tie'
+        this.endGame('Tie')
       } else if (this.player1.health > this.player2.health) {
-        this.foregroundText.text = 'Player 1 Wins'
+        this.endGame('Player 1 Wins')
       } else if (this.player1.health < this.player2.health) {
-        this.foregroundText.text = 'Player 2 Wins'
+        this.endGame('Player 2 Wins')
       }
     }
-    if (this.player1.isDead || this.player2.isDead) {
-      this.removeEventListeners()
-    }
+  }
+
+  startGame = (): void => {
+    const { player1, player1Options, player2, player2Options } = this
+    player1.position = player1Options.initialPosition
+    player1.restart()
+    player2.position = player2Options.initialPosition
+    player2.restart()
+    this.statusBar.restart({ player1Health: player1.health, player2Health: player2.health })
+    this.startModal.visible = false
+  }
+
+  endGame (reasonText: string): void {
+    this.startModal.visible = true
+    this.startModal.reasonText.text = reasonText
   }
 }
